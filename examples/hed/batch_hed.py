@@ -64,7 +64,7 @@ for i in range(nImgs):
     im = Image.open(os.path.join(args.images_dir, imgList[i]))
 
     in_ = np.array(im, dtype=np.float32)
-    in_ = np.pad(in_,((border, border),(border,border),(0,0)),'reflect')
+    in_ = np.pad(in_,((border,border),(0,0)),'reflect')
 
     in_ = in_[:,:,0:3]
     in_ = in_[:,:,::-1]
