@@ -14,6 +14,8 @@ import scipy.io
 import os
 import cv2
 import argparse
+import tfimage as im
+
 
 #add libcaffe to path
 import sys
@@ -59,28 +61,84 @@ net = caffe.Net(args.prototxt, args.caffemodel, caffe.TEST)
 border = args.border    
 
 for i in range(nImgs):
-    if i % 500 == 0:
-        print('processing image %d/%d' % (i, nImgs))
-    im = Image.open(os.path.join(args.images_dir, imgList[i]))
+    src = im.load(os.path.join(args.images_dir, imgList[i]))
+    import scipy.io
+    src = src * 255
+    border = 128 # put a padding around images since edge detection seems to detect edge of image
+    src = src[:,:,:3] # remove alpha channel if present
+    src = np.pad(src, ((border, border), (border, border), (0,0)), "reflect")
+    src = src[:,:,::-1]
+    src -= np.array((104.00698793,116.66876762,122.67891434))
+    src = src.transpose((2, 0, 1))
 
-    in_ = np.array(im, dtype=np.float32)
-    in_ = np.pad(in_,((border,border),(border,border),(0,0)),'reflect')
-
-    in_ = in_[:,:,0:3]
-    in_ = in_[:,:,::-1]
-    in_ -= np.array((104.00698793,116.66876762,122.67891434))
-    in_ = in_.transpose((2, 0, 1))
-    # remove the following two lines if testing with cpu
-
-    # shape for input (data blob is N x C x H x W), set data
-    net.blobs['data'].reshape(1, *in_.shape)
-    net.blobs['data'].data[...] = in_
-    # run net and take argmax for prediction
-    net.forward()
-    fuse = net.blobs['sigmoid-fuse'].data[0][0, :, :]
-    # get rid of the border
+    # [height, width, channels] => [batch, channel, height, width]
+    fuse = edge_pool.apply(run_caffe, [src])
     fuse = fuse[border:-border, border:-border]
-    # save hed file to the disk
-    name, ext = os.path.splitext(imgList[i])
-    sio.savemat(os.path.join(args.hed_mat_dir, name + '.mat'), {'predict':fuse})
+
+    with tempfile.NamedTemporaryFile(suffix=".png") as png_file, tempfile.NamedTemporaryFile(suffix=".mat") as mat_file:
+        scipy.io.savemat(mat_file.name, {"input": fuse})
+        
+        octave_code = r"""
+E = 1-load(input_path).input;
+E = imresize(E, [image_width,image_width]);
+E = 1 - E;
+E = single(E);
+[Ox, Oy] = gradient(convTri(E, 4), 1);
+[Oxx, ~] = gradient(Ox, 1);
+[Oxy, Oyy] = gradient(Oy, 1);
+O = mod(atan(Oyy .* sign(-Oxy) ./ (Oxx + 1e-5)), pi);
+E = edgesNmsMex(E, O, 1, 5, 1.01, 1);
+E = double(E >= max(eps, threshold));
+E = bwmorph(E, 'thin', inf);
+E = bwareaopen(E, small_edge);
+E = 1 - E;
+E = uint8(E * 255);
+imwrite(E, output_path);
+"""
+
+        config = dict(
+            input_path="'%s'" % mat_file.name,
+            output_path="'%s'" % png_file.name,
+            image_width=256,
+            threshold=25.0/255.0,
+            small_edge=5,
+        )
+
+        args = ["octave"]
+        for k, v in config.items():
+            args.extend(["--eval", "%s=%s;" % (k, v)])
+
+        args.extend(["--eval", octave_code])
+        try:
+            subprocess.check_output(args, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            print("octave failed")
+            print("returncode:", e.returncode)
+            print("output:", e.output)
+            raise
+        return im.load(png_file.name)
+#     if i % 500 == 0:
+#         print('processing image %d/%d' % (i, nImgs))
+#     im = Image.open(os.path.join(args.images_dir, imgList[i]))
+
+#     in_ = np.array(im, dtype=np.float32)
+#     in_ = np.pad(in_,((border,border),(border,border),(0,0)),'reflect')
+
+#     in_ = in_[:,:,0:3]
+#     in_ = in_[:,:,::-1]
+#     in_ -= np.array((104.00698793,116.66876762,122.67891434))
+#     in_ = in_.transpose((2, 0, 1))
+#     # remove the following two lines if testing with cpu
+
+#     # shape for input (data blob is N x C x H x W), set data
+#     net.blobs['data'].reshape(1, *in_.shape)
+#     net.blobs['data'].data[...] = in_
+#     # run net and take argmax for prediction
+#     net.forward()
+#     fuse = net.blobs['sigmoid-fuse'].data[0][0, :, :]
+#     # get rid of the border
+#     fuse = fuse[border:-border, border:-border]
+#     # save hed file to the disk
+#     name, ext = os.path.splitext(imgList[i])
+#     sio.savemat(os.path.join(args.hed_mat_dir, name + '.mat'), {'predict':fuse})
  
