@@ -28,7 +28,7 @@ def parse_args():
     parser.add_argument('--prototxt', dest='prototxt', help='caffe prototxt file', default='./deploy.prototxt', type=str)
     parser.add_argument('--images_dir', dest='images_dir', help='directory to store input photos', type=str)
     parser.add_argument('--hed_mat_dir', dest='hed_mat_dir', help='directory to store output hed edges in mat file',  type=str)
-    parser.add_argument('--border', dest='border', help='padding border', type=int, default=128)
+    parser.add_argument('--border', dest='border', help='padding border', type=int, default=1)
     parser.add_argument('--gpu_id', dest='gpu_id', help='gpu id', type=int, default=0)
     args = parser.parse_args()
     return args
@@ -65,7 +65,7 @@ for i in range(nImgs):
     im = Image.open(os.path.join(args.images_dir, imgList[i]))
 
     in_ = np.array(im, dtype=np.float32)
-    # in_ = np.pad(in_,((border,border),(border,border),(0,0)),'reflect')
+    in_ = np.pad(in_,((border,border),(border,border),(0,0)),'reflect')
 
     in_ = in_[:,:,0:3]
     in_ = in_[:,:,::-1]
