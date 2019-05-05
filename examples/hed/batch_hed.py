@@ -28,7 +28,7 @@ def parse_args():
     parser.add_argument('--prototxt', dest='prototxt', help='caffe prototxt file', default='./deploy.prototxt', type=str)
     parser.add_argument('--images_dir', dest='images_dir', help='directory to store input photos', type=str)
     parser.add_argument('--hed_mat_dir', dest='hed_mat_dir', help='directory to store output hed edges in mat file',  type=str)
-    parser.add_argument('--border', dest='border', help='padding border', type=int, default=128)
+    parser.add_argument('--border', dest='border', help='padding border', type=int, default=1)
     parser.add_argument('--gpu_id', dest='gpu_id', help='gpu id', type=int, default=0)
     args = parser.parse_args()
     return args
