@@ -69,7 +69,7 @@ for i in range(nImgs):
     print(in_)
     print(in_[0])
 
-    in_ = in_[:,:,0:3]
+    in_ = in_[:,:,0:2]
     in_ = in_[:,:,::-1]
     in_ -= np.array((104.00698793,116.66876762,122.67891434))
     in_ = in_.transpose((2, 0, 1))
