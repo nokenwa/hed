@@ -15,6 +15,10 @@ import os
 import cv2
 import argparse
 
+#add libcaffe to path
+import sys
+sys.path.append('/jet/lib')
+
 def parse_args():
     parser = argparse.ArgumentParser(description='batch proccesing: photos->edges')
     parser.add_argument('--caffe_root', dest='caffe_root', help='caffe root', default='/jet/use/python/', type=str)
