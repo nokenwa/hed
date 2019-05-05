@@ -67,7 +67,7 @@ for i in range(nImgs):
     in_ = np.array(im, dtype=np.float32)
     in_ = np.roll(in_,-40, axis=0)
     in_ = np.roll(in_,-40, axis=1)
-    in_ = np.pad(in_,((border,border),(border,border),(0,0)),'reflect')
+    in_ = np.pad(in_,((border,border),(border,border),(0,0)),'wrap')
 
     in_ = in_[:,:,0:3]
     in_ = in_[:,:,::-1]
