@@ -17,7 +17,7 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description='batch proccesing: photos->edges')
-    parser.add_argument('--caffe_root', dest='caffe_root', help='caffe root', default='../../', type=str)
+    parser.add_argument('--caffe_root', dest='caffe_root', help='caffe root', default='/jet/use/python/', type=str)
     parser.add_argument('--caffemodel', dest='caffemodel', help='caffemodel', default='./hed_pretrained_bsds.caffemodel', type=str)
     parser.add_argument('--prototxt', dest='prototxt', help='caffe prototxt file', default='./deploy.prototxt', type=str)
     parser.add_argument('--images_dir', dest='images_dir', help='directory to store input photos', type=str)
