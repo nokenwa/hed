@@ -43,44 +43,44 @@ sys.path.insert(0, caffe_root + 'python')
 import caffe
 import scipy.io as sio
 
-if not os.path.exists(args.hed_mat_dir):
-    print('create output directory %s' % args.hed_mat_dir)
-    os.makedirs(args.hed_mat_dir)
+# if not os.path.exists(args.hed_mat_dir):
+#     print('create output directory %s' % args.hed_mat_dir)
+#     os.makedirs(args.hed_mat_dir)
 
-imgList = os.listdir(args.images_dir)
-nImgs = len(imgList)
-print('#images = %d' % nImgs)
+# imgList = os.listdir(args.images_dir)
+# nImgs = len(imgList)
+# print('#images = %d' % nImgs)
 
-caffe.set_mode_gpu()
-caffe.set_device(args.gpu_id)
-# load net
-net = caffe.Net(args.prototxt, args.caffemodel, caffe.TEST)
-# pad border
-border = args.border    
+# caffe.set_mode_gpu()
+# caffe.set_device(args.gpu_id)
+# # load net
+# net = caffe.Net(args.prototxt, args.caffemodel, caffe.TEST)
+# # pad border
+# border = args.border    
 
-for i in range(nImgs):
-    if i % 500 == 0:
-        print('processing image %d/%d' % (i, nImgs))
-    im = Image.open(os.path.join(args.images_dir, imgList[i]))
+# for i in range(nImgs):
+#     if i % 500 == 0:
+#         print('processing image %d/%d' % (i, nImgs))
+#     im = Image.open(os.path.join(args.images_dir, imgList[i]))
 
-    in_ = np.array(im, dtype=np.float32)
-    in_ = np.pad(in_,((border, border),(border,border),(0,0)),'reflect')
+#     in_ = np.array(im, dtype=np.float32)
+#     in_ = np.pad(in_,((border, border),(border,border),(0,0)),'reflect')
 
-    in_ = in_[:,:,0:3]
-    in_ = in_[:,:,::-1]
-    in_ -= np.array((104.00698793,116.66876762,122.67891434))
-    in_ = in_.transpose((2, 0, 1))
-    # remove the following two lines if testing with cpu
+#     in_ = in_[:,:,0:3]
+#     in_ = in_[:,:,::-1]
+#     in_ -= np.array((104.00698793,116.66876762,122.67891434))
+#     in_ = in_.transpose((2, 0, 1))
+#     # remove the following two lines if testing with cpu
 
-    # shape for input (data blob is N x C x H x W), set data
-    net.blobs['data'].reshape(1, *in_.shape)
-    net.blobs['data'].data[...] = in_
-    # run net and take argmax for prediction
-    net.forward()
-    fuse = net.blobs['sigmoid-fuse'].data[0][0, :, :]
-    # get rid of the border
-    fuse = fuse[border:-border, border:-border]
-    # save hed file to the disk
-    name, ext = os.path.splitext(imgList[i])
-    sio.savemat(os.path.join(args.hed_mat_dir, name + '.mat'), {'predict':fuse})
+#     # shape for input (data blob is N x C x H x W), set data
+#     net.blobs['data'].reshape(1, *in_.shape)
+#     net.blobs['data'].data[...] = in_
+#     # run net and take argmax for prediction
+#     net.forward()
+#     fuse = net.blobs['sigmoid-fuse'].data[0][0, :, :]
+#     # get rid of the border
+#     fuse = fuse[border:-border, border:-border]
+#     # save hed file to the disk
+#     name, ext = os.path.splitext(imgList[i])
+#     sio.savemat(os.path.join(args.hed_mat_dir, name + '.mat'), {'predict':fuse})
  
