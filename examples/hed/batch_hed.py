@@ -14,7 +14,6 @@ import scipy.io
 import os
 import cv2
 import argparse
-import tfimage as im
 
 
 #add libcaffe to path
