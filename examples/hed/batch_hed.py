@@ -65,7 +65,9 @@ for i in range(nImgs):
 
     in_ = np.array(im, dtype=np.float32)
     print(in_[0])
-    in_ = np.pad(in_,((border,border),(border,border),(0,0)),'reflect')
+    in_ = np.pad(in_,((border,border),(border,border)),'reflect')
+    print(in_)
+    print(in_[0])
 
     in_ = in_[:,:,0:3]
     in_ = in_[:,:,::-1]
