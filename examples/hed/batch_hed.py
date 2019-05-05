@@ -18,6 +18,7 @@ import argparse
 #add libcaffe to path
 import sys
 sys.path.append('/jet/lib')
+print(sys.path)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='batch proccesing: photos->edges')
